@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenBin Dashboard | Smart Trash Can with Waste Recognition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        /* Custom styles */
+        .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .full-height {
+            min-height: calc(100vh - 64px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-emerald-700 text-white shadow">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/3cdd4e59-706a-4da7-945e-1bf4c3c76f28.png" alt="GreenBin logo showing a leaf inside a trash can icon with green and white colors" class="rounded-full">
+                <h1 class="text-xl font-bold">GreenBin Dashboard</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="p-2 rounded-full hover:bg-emerald-600">
+                    <i class="fas fa-bell text-lg"></i>
+                </button>
+                <div class="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center">JD</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Main Content -->
+            <div class="w-full lg:w-3/4">
+                <!-- Overview Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- Waste Collected -->
+                    <div class="card bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-sm font-medium text-gray-500">Waste Collected</h3>
+                        <div class="flex items-baseline mt-2">
+                            <span class="text-2xl font-bold">3.2</span>
+                            <span class="ml-1 text-gray-500">kg</span>
+                        </div>
+                        <div class="flex items-center mt-2">
+                            <span class="status-badge bg-green-500"></span>
+                            <span class="text-green-500 text-sm">+12% from yesterday</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Recycling Rate -->
+                    <div class="card bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-sm font-medium text-gray-500">Recycling Rate</h3>
+                        <div class="flex items-baseline mt-2">
+                            <span class="text-2xl font-bold">78</span>
+                            <span class="ml-1 text-gray-500">%</span>
+                        </div>
+                        <div class="flex items-center mt-2">
+                            <span class="status-badge bg-green-500"></span>
+                            <span class="text-green-500 text-sm">+5% from last week</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Bin Status -->
+                    <div class="card bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-sm font-medium text-gray-500">Bin Status</h3>
+                        <div class="flex items-baseline mt-2">
+                            <span class="text-2xl font-bold">Normal</span>
+                        </div>
+                        <div class="flex items-center mt-2">
+                            <span class="status-badge bg-green-500"></span>
+                            <span class="text-green-500 text-sm">Ready to use</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Carbon Saved -->
+                    <div class="card bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-sm font-medium text-gray-500">Carbon Saved</h3>
+                        <div class="flex items-baseline mt-2">
+                            <span class="text-2xl font-bold">4.7</span>
+                            <span class="ml-1 text-gray-500">kg CO₂</span>
+                        </div>
+                        <div class="flex items-center mt-2">
+                            <span class="status-badge bg-green-500"></span>
+                            <span class="text-green-500 text-sm">Today's impact</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Waste Composition Chart -->
+                <div class="card bg-white p-6 rounded-lg shadow mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold">Waste Composition</h2>
+                        <select class="bg-gray-100 border border-gray-300 text-gray-700 py-1 px-3 rounded text-sm">
+                            <option>Last 7 days</option>
+                            <option>Last 30 days</option>
+                            <option>Last 90 days</option>
+                        </select>
+                    </div>
+                    <div>
+                        <canvas id="wasteChart" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity and Bin Visualization -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Recent Activity -->
+                    <div class="card bg-white p-6 rounded-lg shadow">
+                        <h2 class="text-lg font-semibold mb-4">Recent Activity</h2>
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                                    <i class="fas fa-recycle text-emerald-600"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium">Plastic bottle recycled</p>
+                                    <p class="text-xs text-gray-500">2 minutes ago</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                                    <i class="fas fa-trash-alt text-amber-600"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium">Food waste detected</p>
+                                    <p class="text-xs text-gray-500">15 minutes ago</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <i class="fas fa-battery-full text-blue-600"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium">Bin fully charged</p>
+                                    <p class="text-xs text-gray-500">1 hour ago</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                    <i class="fas fa-compress-arrows-alt text-purple-600"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium">Bin compaction activated</p>
+                                    <p class="text-xs text-gray-500">3 hours ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bin Visualization -->
+                    <div class="card bg-white p-6 rounded-lg shadow flex flex-col">
+                        <h2 class="text-lg font-semibold mb-4">Bin Status Visualization</h2>
+                        <div class="flex-grow flex items-center justify-center">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/c283e02d-d554-4a32-9e24-11f64a63bd6b.png" alt="3D rendering of GreenBin smart trash can showing full level at 65% with compartments for different waste types" class="max-w-full h-auto">
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>Capacity</span>
+                                <span>65% full</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-emerald-500 h-2 rounded-full" style="width: 65%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="w-full lg:w-1/4">
+                <!-- Waste Category Breakdown -->
+                <div class="card bg-white p-6 rounded-lg shadow mb-6">
+                    <h2 class="text-lg font-semibold mb-4">Waste Categories</h2>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Recyclables</span>
+                                <span>42%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 42%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Organic</span>
+                                <span>28%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 28%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Non-recyclable</span>
+                                <span>19%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-red-500 h-2 rounded-full" style="width: 19%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Hazardous</span>
+                                <span>11%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 11%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recycling Tips -->
+                <div class="card bg-white p-6 rounded-lg shadow mb-6">
+                    <h2 class="text-lg font-semibold mb-4">Recycling Tips</h2>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center mt-1">
+                                <i class="fas fa-lightbulb text-emerald-600 text-xs"></i>
+                            </div>
+                            <p class="ml-2 text-sm">Rinse containers before recycling to avoid contamination</p>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center mt-1">
+                                <i class="fas fa-lightbulb text-emerald-600 text-xs"></i>
+                            </div>
+                            <p class="ml-2 text-sm">Flatten cardboard boxes to save space in the bin</p>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center mt-1">
+                                <i class="fas fa-lightbulb text-emerald-600 text-xs"></i>
+                            </div>
+                            <p class="ml-2 text-sm">Separate plastic films from rigid plastics for better recycling</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card bg-white p-6 rounded-lg shadow">
+                    <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 py-2 px-3 rounded text-sm font-medium">
+                            <i class="fas fa-compress-arrows-alt mr-1"></i> Compact
+                        </button>
+                        <button class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 py-2 px-3 rounded text-sm font-medium">
+                            <i class="fas fa-broom mr-1"></i> Clean
+                        </button>
+                        <button class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 py-2 px-3 rounded text-sm font-medium">
+                            <i class="fas fa-bell mr-1"></i> Notify Full
+                        </button>
+                        <button class="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 py-2 px-3 rounded text-sm font-medium">
+                            <i class="fas fa-history mr-1"></i> History
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize charts when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Waste Composition Chart
+            const wasteCtx = document.getElementById('wasteChart').getContext('2d');
+            const wasteChart = new Chart(wasteCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                    datasets: [
+                        {
+                            label: 'Recyclables',
+                            data: [2.1, 2.3, 2.0, 2.5, 2.7, 1.8, 1.5],
+                            backgroundColor: '#3b82f6',
+                        },
+                        {
+                            label: 'Organic',
+                            data: [1.4, 1.2, 1.6, 1.3, 1.5, 1.9, 1.7],
+                            backgroundColor: '#10b981',
+                        },
+                        {
+                            label: 'Non-recyclable',
+                            data: [0.8, 0.7, 0.9, 0.6, 0.5, 1.1, 0.9],
+                            backgroundColor: '#ef4444',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true,
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Weight (kg)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                afterBody: function(context) {
+                                    const total = context[0].dataset.data.reduce((a, b) => a + b, 0);
+                                    return `Total: ${total.toFixed(1)} kg`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
